@@ -2,18 +2,33 @@ import torch
 import torch.nn as nn
 
 cfg = {
-    'VGG11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M']
+    'VGG11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    'VGG13': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    'VGG16': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
+    'VGG19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
 }
 
 class VGG(nn.Module):
     def __init__(self, vgg_cfg='VGG11'):
         super(VGG, self).__init__()
         self.features = self._make_layer(cfg[vgg_cfg])
-        self.classifier = nn.Linear(512, 10)
+        self.fc1 = nn.Sequential(
+            nn.Linear(512, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(inplace=True)
+        )
+        self.fc2 = nn.Sequential(
+            nn.Linear(256, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(inplace=True)
+        )
+        self.classifier = nn.Linear(256, 10)
 
     def forward(self, x):
         out = self.features(x)
         out = out.view(out.shape[0], -1)
+        out = self.fc1(out)
+        out = self.fc2(out)
         out = self.classifier(out)
         return out
 

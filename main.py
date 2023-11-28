@@ -49,7 +49,7 @@ testloader = tud.DataLoader(
 #####################
 ###     model     ###
 #####################
-net = VGG()
+net = VGG('VGG19')
 net.to(device)
 if device == 'cuda':
     torch.nn.DataParallel(net)
